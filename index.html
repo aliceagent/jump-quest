@@ -228,8 +228,8 @@
     let platforms = [];
     let player = null;
     let cameraY = 0;
-    let basePlatformSpeed = 0.6; // Starting slow
-    let maxPlatformSpeed = 3.5;   // Gets faster!
+    let basePlatformSpeed = 0.5; // Starting slow
+    let maxPlatformSpeed = 2.0;   // Cap speed so jumps stay possible
     
     // Button states
     let moveLeft = false;
@@ -314,7 +314,7 @@
         
         // Handle jump
         if (doJump && this.onGround) {
-          this.vy = -13;
+          this.vy = -15; // Higher jump to reach all platforms
           this.squash = 1.4;
           this.stretch = 0.6;
           this.onGround = false;
@@ -487,7 +487,7 @@
       // Generate initial platforms going up
       let lastY = H - 120;
       for (let i = 0; i < 12; i++) {
-        lastY -= 100 + Math.random() * 50;
+        lastY -= 75 + Math.random() * 35; // Closer platforms = always reachable
         const width = 90 + Math.random() * 50;
         const x = width/2 + Math.random() * (W - width);
         platforms.push(new Platform(x, lastY, width));
@@ -570,8 +570,8 @@
     function update() {
       if (!gameRunning) return;
       
-      // Speed increases with score - caps at maxPlatformSpeed
-      const speed = Math.min(maxPlatformSpeed, basePlatformSpeed + score * 0.08);
+      // Speed increases with score - but slower progression
+      const speed = Math.min(maxPlatformSpeed, basePlatformSpeed + score * 0.04);
       
       player.update();
       
@@ -580,12 +580,12 @@
       // Recycle platforms that fell below
       platforms = platforms.filter(p => p.y - cameraY < H + 100);
       
-      // Add new platforms above
+      // Add new platforms above - closer together so always possible to reach
       const highestPlatform = platforms.reduce((min, p) => p.y < min ? p.y : min, player.y);
       if (highestPlatform > cameraY - 100) {
         const width = 90 + Math.random() * 50;
         const x = width/2 + Math.random() * (W - width);
-        platforms.push(new Platform(x, highestPlatform - 100 - Math.random() * 50, width));
+        platforms.push(new Platform(x, highestPlatform - 75 - Math.random() * 35, width));
       }
       
       checkCollisions();

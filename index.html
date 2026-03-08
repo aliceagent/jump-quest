@@ -228,7 +228,8 @@
     let platforms = [];
     let player = null;
     let cameraY = 0;
-    let basePlatformSpeed = 0.8; // Slower!
+    let basePlatformSpeed = 0.6; // Starting slow
+    let maxPlatformSpeed = 3.5;   // Gets faster!
     
     // Button states
     let moveLeft = false;
@@ -569,7 +570,8 @@
     function update() {
       if (!gameRunning) return;
       
-      const speed = basePlatformSpeed + score * 0.03;
+      // Speed increases with score - caps at maxPlatformSpeed
+      const speed = Math.min(maxPlatformSpeed, basePlatformSpeed + score * 0.08);
       
       player.update();
       

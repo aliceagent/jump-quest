@@ -311,15 +311,6 @@
         
         // Eye follow velocity
         this.eyeOffset = this.vx * 0.4;
-        
-        // Handle jump
-        if (doJump && this.onGround) {
-          this.vy = -15; // Higher jump to reach all platforms
-          this.squash = 1.4;
-          this.stretch = 0.6;
-          this.onGround = false;
-          doJump = false;
-        }
       }
 
       draw() {
@@ -640,16 +631,25 @@
     addButtonListeners(leftBtn, (pressed) => { moveLeft = pressed; });
     addButtonListeners(rightBtn, (pressed) => { moveRight = pressed; });
     
+    // Jump - trigger on press, not hold
     jumpBtn.addEventListener('mousedown', (e) => {
       e.preventDefault();
-      doJump = true;
+      if (player && player.onGround) {
+        player.vy = -13;
+        player.squash = 1.4;
+        player.stretch = 0.6;
+        player.onGround = false;
+      }
     });
     jumpBtn.addEventListener('touchstart', (e) => {
       e.preventDefault();
-      doJump = true;
+      if (player && player.onGround) {
+        player.vy = -13;
+        player.squash = 1.4;
+        player.stretch = 0.6;
+        player.onGround = false;
+      }
     }, { passive: false });
-    jumpBtn.addEventListener('mouseup', () => { doJump = false; });
-    jumpBtn.addEventListener('touchend', () => { doJump = false; });
 
     startBtn.addEventListener('click', () => {
       startScreen.style.display = 'none';

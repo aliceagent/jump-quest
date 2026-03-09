@@ -234,6 +234,9 @@
     // Button states
     let moveLeft = false;
     let moveRight = false;
+    
+    // Jump buffer - allows jump shortly after leaving platform
+    let lastGroundedTime = 0;
 
     const platformColors = ['#ff6b9d', '#4ecdc4', '#ffe66d', '#a855f7', '#f97316', '#06b6d4'];
 
@@ -534,6 +537,7 @@
               player.squash = 0.75;
               player.stretch = 1.25;
               player.onGround = true;
+              lastGroundedTime = Date.now();
               
               if (!platform.landed) {
                 platform.landed = true;
@@ -656,14 +660,16 @@
     setupButton(leftBtn, () => { moveLeft = true; }, () => { moveLeft = false; });
     setupButton(rightBtn, () => { moveRight = true; }, () => { moveRight = false; });
     
-    // Jump - only when on ground
+    // Jump - when on ground OR within 100ms of leaving platform
     const doJump = () => {
       if (!gameRunning || !player) return;
-      if (player.onGround) {
+      const timeSinceGrounded = Date.now() - lastGroundedTime;
+      if (player.onGround || timeSinceGrounded < 100) {
         player.vy = -13;
         player.squash = 1.4;
         player.stretch = 0.6;
         player.onGround = false;
+        lastGroundedTime = 0; // Reset so can't double jump
       }
     };
     

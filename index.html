@@ -234,7 +234,6 @@
     // Button states
     let moveLeft = false;
     let moveRight = false;
-    let doJump = false;
 
     const platformColors = ['#ff6b9d', '#4ecdc4', '#ffe66d', '#a855f7', '#f97316', '#06b6d4'];
 
@@ -628,27 +627,54 @@
       btn.addEventListener('touchend', end, { passive: false });
     }
 
-    addButtonListeners(leftBtn, (pressed) => { moveLeft = pressed; });
-    addButtonListeners(rightBtn, (pressed) => { moveRight = pressed; });
+    // More reliable button handlers - use pointer events
+    const setupButton = (btn, onDown, onUp) => {
+      btn.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        btn.setPointerCapture(e.pointerId);
+        onDown();
+      });
+      btn.addEventListener('pointerup', (e) => {
+        e.preventDefault();
+        onUp();
+      });
+      btn.addEventListener('pointercancel', (e) => {
+        e.preventDefault();
+        onUp();
+      });
+      // Also handle touch directly for better mobile response
+      btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        onDown();
+      }, { passive: false });
+      btn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        onUp();
+      }, { passive: false });
+    };
     
-    // Jump - trigger on press, not hold
-    jumpBtn.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      if (player && player.onGround) {
+    setupButton(leftBtn, () => { moveLeft = true; }, () => { moveLeft = false; });
+    setupButton(rightBtn, () => { moveRight = true; }, () => { moveRight = false; });
+    
+    // Jump - trigger immediately on any tap/click
+    const doJump = () => {
+      if (!gameRunning || !player) return;
+      // Allow jump if on ground OR if just fell (small tolerance)
+      if (player.onGround || player.vy >= -1) {
         player.vy = -13;
         player.squash = 1.4;
         player.stretch = 0.6;
         player.onGround = false;
       }
+    };
+    
+    jumpBtn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      doJump();
     });
     jumpBtn.addEventListener('touchstart', (e) => {
       e.preventDefault();
-      if (player && player.onGround) {
-        player.vy = -13;
-        player.squash = 1.4;
-        player.stretch = 0.6;
-        player.onGround = false;
-      }
+      doJump();
     }, { passive: false });
 
     startBtn.addEventListener('click', () => {
@@ -674,12 +700,14 @@
     document.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowLeft' || e.key === 'a') moveLeft = true;
       if (e.key === 'ArrowRight' || e.key === 'd') moveRight = true;
-      if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w') doJump = true;
+      if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w') {
+        e.preventDefault();
+        doJump();
+      }
     });
     document.addEventListener('keyup', (e) => {
       if (e.key === 'ArrowLeft' || e.key === 'a') moveLeft = false;
       if (e.key === 'ArrowRight' || e.key === 'd') moveRight = false;
-      if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w') doJump = false;
     });
 
     // Initialize

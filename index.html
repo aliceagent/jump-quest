@@ -656,11 +656,10 @@
     setupButton(leftBtn, () => { moveLeft = true; }, () => { moveLeft = false; });
     setupButton(rightBtn, () => { moveRight = true; }, () => { moveRight = false; });
     
-    // Jump - trigger immediately on any tap/click
+    // Jump - only when on ground
     const doJump = () => {
       if (!gameRunning || !player) return;
-      // Allow jump if on ground OR if just fell (small tolerance)
-      if (player.onGround || player.vy >= -1) {
+      if (player.onGround) {
         player.vy = -13;
         player.squash = 1.4;
         player.stretch = 0.6;
